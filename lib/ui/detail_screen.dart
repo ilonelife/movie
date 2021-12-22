@@ -44,8 +44,8 @@ class DetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 200,
-                        height: 300,
+                        width: 210,
+                        height: 280,
                         child: Image.network(
                           'https://image.tmdb.org/t/p/original' +
                               backdropPath.toString(),
@@ -78,14 +78,16 @@ class DetailScreen extends StatelessWidget {
                                     label: Text(
                                       voteCount.toString(),
                                       style: const TextStyle(
-                                          color: Colors.white, fontSize: 10),
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     style: TextButton.styleFrom(
                                         backgroundColor: Colors.blue),
                                   ),
                                 ),
                                 const SizedBox(
-                                  width: 10,
+                                  width: 5,
                                 ),
                                 SizedBox(
                                   width: 65,
@@ -99,7 +101,9 @@ class DetailScreen extends StatelessWidget {
                                     label: Text(
                                       voteAverage.toString(),
                                       style: const TextStyle(
-                                          color: Colors.white, fontSize: 10),
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     style: TextButton.styleFrom(
                                         backgroundColor: Colors.blue),
@@ -115,7 +119,7 @@ class DetailScreen extends StatelessWidget {
                 ),
                 Text(
                   overView,
-                  maxLines: 6,
+                  maxLines: 7,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],

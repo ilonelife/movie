@@ -39,64 +39,82 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const String _img_path = 'https://image.tmdb.org/t/p/original';
     return Scaffold(
       appBar: AppBar(
         title: const Text('영화 정보 검색기'),
       ),
       body: Column(
         children: [
-          TextField(
-            controller: _textEditingController,
-            decoration: InputDecoration(
-              suffix: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.search),
-              ),
-              hintText: '검색어를 입력하세요',
-            ),
-          ),
+          _buildTextField(),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 0,
-                crossAxisSpacing: 5,
-                childAspectRatio: 0.5,
-              ),
-              itemCount: _movies.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    GestureDetector(
-                      child:
-                          Image.network(_img_path + _movies[index].posterPath),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailScreen(
-                              title: _movies[index].title,
-                              overView: _movies[index].overView,
-                              posterPath: _movies[index].posterPath,
-                              backdropPath: _movies[index].backdropPath,
-                              releaseDate: _movies[index].releaseDate,
-                              voteAverage: _movies[index].voteAverage,
-                              voteCount: _movies[index].voteCount,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    // Image.network(_img_path + _movies[index].posterPath),
-                    Text(_movies[index].title),
-                  ],
-                );
-              },
-            ),
+            child: _buildGridView(),
           ),
         ],
       ),
+    );
+  }
+
+  TextField _buildTextField() {
+    return TextField(
+      controller: _textEditingController,
+      decoration: InputDecoration(
+        suffix: IconButton(
+          onPressed: () {
+            _movies = _movies
+                .where((e) => e.title.contains(_textEditingController.text))
+                .toList();
+            setState(() {});
+            print(_textEditingController.text);
+          },
+          icon: const Icon(Icons.search),
+        ),
+        hintText: '검색어를 입력하세요',
+      ),
+    );
+  }
+
+  GridView _buildGridView() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 0,
+        crossAxisSpacing: 5,
+        childAspectRatio: 0.5,
+      ),
+      itemCount: _movies.length,
+      itemBuilder: (context, index) {
+        return Column(
+          children: [
+            GestureDetector(
+              child: Image.network('https://image.tmdb.org/t/p/original' +
+                  _movies[index].posterPath),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailScreen(
+                      title: _movies[index].title,
+                      overView: _movies[index].overView,
+                      posterPath: _movies[index].posterPath,
+                      backdropPath: _movies[index].backdropPath,
+                      releaseDate: _movies[index].releaseDate,
+                      voteAverage: _movies[index].voteAverage,
+                      voteCount: _movies[index].voteCount,
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(
+              height: 5,
+            ),
+            Text(
+              _movies[index].title,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+          ],
+        );
+      },
     );
   }
 }
