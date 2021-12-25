@@ -12,7 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Movie> _movies = [];
+  List<Movie> _movies = []; // Movie? _movies;
+  List<Movie> _origin = []; // 검색 후 원래 데이터로 복구하기 위해서
 
   final _api = MovieApi();
   final _textEditingController = TextEditingController();
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Movie> movies = await _api.fetchMovies(query);
     setState(() {
       _movies = movies;
+      _origin = movies;
     });
   }
 
@@ -42,6 +44,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('영화 정보 검색기'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                _showResult('');
+                // _movies = _origin;
+                // setState(() {});
+              },
+              icon: const Icon(Icons.restart_alt_outlined)),
+        ],
       ),
       body: Column(
         children: [
@@ -64,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 .where((e) => e.title.contains(_textEditingController.text))
                 .toList();
             setState(() {});
-            print(_textEditingController.text);
           },
           icon: const Icon(Icons.search),
         ),
@@ -86,8 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
         return Column(
           children: [
             GestureDetector(
-              child: Image.network('https://image.tmdb.org/t/p/original' +
-                  _movies[index].posterPath),
+              child: Hero(
+                child: Image.network('https://image.tmdb.org/t/p/original' +
+                    _movies[index].posterPath),
+                tag: "movie",
+              ),
               onTap: () {
                 Navigator.push(
                   context,

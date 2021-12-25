@@ -28,10 +28,10 @@ class DetailScreen extends StatelessWidget {
         ),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          //  가로 모드에서 스크롤 가능하게 ListView 적용함
+          child: Hero(
+            tag: "movie",
+            child: ListView(
               children: [
                 Text(
                   title,
@@ -43,13 +43,12 @@ class DetailScreen extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 210,
-                        height: 280,
+                      // Row 에서  버튼 영역의 크기만큼 쓰고, 나머지 사진 영역은 최대한(expanded) 공간 쓰겠다..
+                      // 이미지의 사이즈는 지정하지 않음...
+                      Expanded(
                         child: Image.network(
                           'https://image.tmdb.org/t/p/original' +
-                              backdropPath.toString(),
-                          fit: BoxFit.cover,
+                              posterPath.toString(),
                         ),
                       ),
                       Padding(
