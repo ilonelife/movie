@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:movie/data/movie_api.dart';
 import 'package:movie/model/movie.dart';
@@ -14,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Movie> _movies = []; // Movie? _movies;
   List<Movie> _origin = []; // 검색 후 원래 데이터로 복구하기 위해서
+  Timer? _debounce;
 
   final _api = MovieApi();
   final _textEditingController = TextEditingController();
@@ -35,7 +38,26 @@ class _HomeScreenState extends State<HomeScreen> {
     List<Movie> movies = await _api.fetchMovies(query);
     setState(() {
       _movies = movies;
-      _origin = movies;
+      _origin = _movies;
+    });
+  }
+
+  // 검색어 앱력 루틴 개선 함
+  // 키 입력이 어느  시간 중단 되며 그때 검색하게 됨.
+  // 키 앱력 시 마다 검색해서 서버 부하 주는 거 방지 효과
+  void onQueryChanged(String query) {
+    if (_debounce?.isActive ?? false) {
+      _debounce?.cancel();
+    }
+
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      setState(() {
+        _origin = _movies
+            .where(
+              (e) => e.title.contains(query),
+            )
+            .toList();
+      });
     });
   }
 
@@ -67,19 +89,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   TextField _buildTextField() {
     return TextField(
+      onChanged: onQueryChanged,
       controller: _textEditingController,
       decoration: InputDecoration(
-        suffix: IconButton(
-          onPressed: () {
-            _movies = _movies
-                .where((e) => e.title.contains(_textEditingController.text))
-                .toList();
-            setState(() {});
-          },
+        suffixIcon: IconButton(
+          onPressed: () {},
           icon: const Icon(Icons.search),
         ),
-        hintText: '검색어를 입력하세요',
       ),
+      // controller: _textEditingController,
+      // decoration: InputDecoration(
+      //   suffix: IconButton(
+      //     onPressed: () {
+      //       _movies = _movies
+      //           .where((e) => e.title.contains(_textEditingController.text))
+      //           .toList();
+      //       setState(() {});
+      //     },
+      //     icon: const Icon(Icons.search),
+      //   ),
+      //   hintText: '검색어를 입력하세요',
+      // ),
     );
   }
 
@@ -91,14 +121,14 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisSpacing: 5,
         childAspectRatio: 0.5,
       ),
-      itemCount: _movies.length,
+      itemCount: _origin.length,
       itemBuilder: (context, index) {
         return Column(
           children: [
             GestureDetector(
               child: Hero(
                 child: Image.network('https://image.tmdb.org/t/p/original' +
-                    _movies[index].posterPath),
+                    _origin[index].posterPath),
                 tag: "movie",
               ),
               onTap: () {
@@ -106,13 +136,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => DetailScreen(
-                      title: _movies[index].title,
-                      overView: _movies[index].overView,
-                      posterPath: _movies[index].posterPath,
-                      backdropPath: _movies[index].backdropPath,
-                      releaseDate: _movies[index].releaseDate,
-                      voteAverage: _movies[index].voteAverage,
-                      voteCount: _movies[index].voteCount,
+                      title: _origin[index].title,
+                      overView: _origin[index].overView,
+                      posterPath: _origin[index].posterPath,
+                      backdropPath: _origin[index].backdropPath,
+                      releaseDate: _origin[index].releaseDate,
+                      voteAverage: _origin[index].voteAverage,
+                      voteCount: _origin[index].voteCount,
                     ),
                   ),
                 );
@@ -122,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 5,
             ),
             Text(
-              _movies[index].title,
+              _origin[index].title,
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ],
