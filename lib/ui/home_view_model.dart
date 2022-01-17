@@ -24,8 +24,10 @@ class HomeViewModel with ChangeNotifier {
 
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       final fetchedMovies = await _api.fetchMovies(query);
-      movies =
-          fetchedMovies.where((movie) => movie.title.contains(query)).toList();
+      movies = fetchedMovies
+          .where((movie) =>
+              movie.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
 
       notifyListeners();
     });
