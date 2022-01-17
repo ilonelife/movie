@@ -1,8 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:movie/data/movie_api.dart';
 import 'package:movie/model/movie.dart';
+import 'package:movie/ui/home_view_model.dart';
+import 'package:provider/provider.dart';
 
 import 'detail_screen.dart';
 
@@ -14,18 +15,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Movie> _movies = []; // Movie? _movies;
-  List<Movie> _origin = []; // 검색 후 원래 데이터로 복구하기 위해서
   Timer? _debounce;
 
-  final _api = MovieApi();
+//  final _api = MovieApi();
   final _textEditingController = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _showResult('');
+
+    Future.microtask(() {
+      // 아주 잠깐 딜레이
+      // 여기부터는 context 가 null 아님
+      _showResult('');
+    });
   }
 
   @override
@@ -35,52 +38,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showResult(String query) async {
-    List<Movie> movies = await _api.fetchMovies(query);
-    setState(() {
-      _movies = movies;
-      _origin = _movies;
-    });
+    context.read<HomeViewModel>().fetchMovies(query);
   }
 
   // 검색어 앱력 루틴 개선 함
   // 키 입력이 어느  시간 중단 되며 그때 검색하게 됨.
   // 키 앱력 시 마다 검색해서 서버 부하 주는 거 방지 효과
   void onQueryChanged(String query) {
-    if (_debounce?.isActive ?? false) {
-      _debounce?.cancel();
-    }
-
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      setState(() {
-        _origin = _movies
-            .where(
-              (e) => e.title.contains(query),
-            )
-            .toList();
-      });
-    });
+    context.read<HomeViewModel>().searchWithQuery(query);
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<HomeViewModel>();
+    final movies = viewModel.movies;
     return Scaffold(
       appBar: AppBar(
         title: const Text('영화 정보 검색기'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                _showResult('');
-                // _movies = _origin;
-                // setState(() {});
-              },
-              icon: const Icon(Icons.restart_alt_outlined)),
-        ],
       ),
       body: Column(
         children: [
           _buildTextField(),
           Expanded(
-            child: _buildGridView(),
+            child: _buildGridView(movies),
           ),
         ],
       ),
@@ -96,24 +76,12 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {},
           icon: const Icon(Icons.search),
         ),
+        hintText: '검색어를 입력하세요',
       ),
-      // controller: _textEditingController,
-      // decoration: InputDecoration(
-      //   suffix: IconButton(
-      //     onPressed: () {
-      //       _movies = _movies
-      //           .where((e) => e.title.contains(_textEditingController.text))
-      //           .toList();
-      //       setState(() {});
-      //     },
-      //     icon: const Icon(Icons.search),
-      //   ),
-      //   hintText: '검색어를 입력하세요',
-      // ),
     );
   }
 
-  GridView _buildGridView() {
+  GridView _buildGridView(List<Movie> movies) {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -121,14 +89,14 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisSpacing: 5,
         childAspectRatio: 0.5,
       ),
-      itemCount: _origin.length,
+      itemCount: movies.length,
       itemBuilder: (context, index) {
         return Column(
           children: [
             GestureDetector(
               child: Hero(
                 child: Image.network('https://image.tmdb.org/t/p/original' +
-                    _origin[index].posterPath),
+                    movies[index].posterPath),
                 tag: "movie",
               ),
               onTap: () {
@@ -136,13 +104,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => DetailScreen(
-                      title: _origin[index].title,
-                      overView: _origin[index].overView,
-                      posterPath: _origin[index].posterPath,
-                      backdropPath: _origin[index].backdropPath,
-                      releaseDate: _origin[index].releaseDate,
-                      voteAverage: _origin[index].voteAverage,
-                      voteCount: _origin[index].voteCount,
+                      title: movies[index].title,
+                      overView: movies[index].overView,
+                      posterPath: movies[index].posterPath,
+                      backdropPath: movies[index].backdropPath,
+                      releaseDate: movies[index].releaseDate,
+                      voteAverage: movies[index].voteAverage,
+                      voteCount: movies[index].voteCount,
                     ),
                   ),
                 );
@@ -152,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 5,
             ),
             Text(
-              _origin[index].title,
+              movies[index].title,
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ],

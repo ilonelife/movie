@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:movie/domain/tmdb.dart';
 import 'package:movie/model/movie.dart';
 
-class MovieApi {
+class MovieApi implements Tmdb {
+  @override
   Future<List<Movie>> fetchMovies(String query) async {
     // 참고용. 0.5 초 기다림
     await Future<void>.delayed(const Duration(milliseconds: 500));

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:movie/data/movie_api.dart';
 import 'package:movie/ui/home_screen.dart';
+import 'package:movie/ui/home_view_model.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +19,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(),
+      home: ChangeNotifierProvider<HomeViewModel>(
+        create: (_) => HomeViewModel(MovieApi()),
+        child: const HomeScreen(),
+      )
+
     );
   }
 }
